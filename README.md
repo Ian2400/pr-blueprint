@@ -1,8 +1,6 @@
-<p align="center">
-  <img src="docs/icon.webp" width="200" alt="PR Blueprint logo">
-</p>
+<img src="docs/icon.webp" width="400" alt="PR Blueprint logo">
 
-<h1 align="center">PR Blueprint</h1>
+# PR Blueprint
 
 A [Claude Code](https://claude.ai/code) skill that builds a bespoke pre-PR review
 skill for *your* repository — one that reviews code the way your team actually
