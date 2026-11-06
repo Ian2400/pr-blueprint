@@ -119,13 +119,6 @@ On a developer's branch, before they open a PR:
 - **Writes the PR description** in three parts (for reviewers, for engineering,
   for on-call) with a machine-readable Deploying-this and Revert plan, then
   opens a draft PR.
-- **Learns.** Developer overrides and reviewer comments (`learn <PR#>`) become
-  feedback issues; `consolidate` turns them into a rules PR for your team's
-  owners to approve.
-
-Everything it learns about your team lives in files it generates and never
-overwrites on an engine upgrade: `rules.md`, `canonical.md`, `surfaces.md`,
-`examples.md`, `config.json`. The plugin supplies only the engine.
 
 </td>
 <td width="50%" valign="top">
@@ -138,6 +131,39 @@ overwrites on an engine upgrade: `rules.md`, `canonical.md`, `surfaces.md`,
 
 See [`skills/repo-pr-check-setup/SKILL.md`](skills/repo-pr-check-setup/SKILL.md)
 for the full mechanics, and its `CHANGELOG.md` for what each version adds.
+
+## How your bespoke skill learns
+
+Nobody edits `rules.md` by hand during a check. Instead, everything that teaches
+the skill something flows one way, into a rules PR your owners approve:
+
+```
+developer overrides a finding ─┐
+reviewer comments on a PR ─────┼─> lesson ─> feedback issue ─> consolidate ─> rules PR ─> CODEOWNERS approve
+developer states a convention ─┘
+```
+
+- **During a normal run**, any time the developer's answer differs from the
+  skill's triage — dropping a planned fix, rejecting one, disagreeing with a
+  risk score, stating "we always X" — it's recorded as a lesson without you
+  doing anything extra.
+- **`/<name> learn <PR#>`**, run after a PR has been reviewed, reads the
+  reviewers' comments and classifies each one: a problem the skill missed, one
+  it mis-triaged, a comment that contradicts an existing rule, a security item
+  it should have flagged, or something an available linter rule would have
+  caught. It proposes a lesson for each and asks which to file.
+- Every lesson becomes a GitHub issue labeled `pr-check-feedback` (configurable),
+  so the whole team can see what's been proposed — never a silent edit.
+- **`/<name> consolidate`**, run by one of the repo's rules owners, lists the
+  open feedback issues, groups the ones proposing the same change, checks each
+  against `rules.md` and `examples.md` for conflicts, and walks the owner
+  through accepting, rejecting, or deferring each one. Accepted changes land in
+  one rules PR — `CODEOWNERS` makes the owners its required reviewers.
+
+This is also how the ID patterns and linter settings stay accurate: a false
+alarm in the secrets/PII scan or a lint rule the team disagrees with becomes
+the same kind of lesson, targeting `security_patterns.json` or the tool's own
+config instead of `rules.md`.
 
 ## Checking for updates to the vendored vulnerability scan
 
