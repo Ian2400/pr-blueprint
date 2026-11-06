@@ -184,6 +184,13 @@ vendored `cloudflare/security-audit-skill` copy is behind upstream:
 
 See `VENDORED.md` beside the vendored files for how an update gets applied.
 
+## Credits
+
+Many of the core ideas behind how this reviews code — triage categories,
+calibrating against a team's own judgment, fixing the clear-cut problems while
+surfacing the judgment calls — come from Anthropic's
+[Solving code review at Anthropic](https://claude.dev/blog/solving-code-review-at-anthropic/).
+
 ## License
 
 MIT — see [`LICENSE`](LICENSE). The vendored
