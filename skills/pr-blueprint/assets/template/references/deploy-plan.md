@@ -46,7 +46,7 @@ Never guess a schedule or a host.
 ````markdown
 ### Deploying this
 
-Run `athletics_model_train.sql` in dev, check it, then prd. Then update the nightly
+Run `retention_model_train.sql` in dev, check it, then prd. Then update the nightly
 scoring script on both hosts and add its cron entry (daily 02:00). Stop if the SQL
 step fails.
 
@@ -60,21 +60,21 @@ steps:
   - id: D1
     surface: database_objects
     environments: [dev, prd]
-    action: "Run src/projects/athletics/athletics_model_train.sql as etlgpdb"
+    action: "Run src/projects/retention/retention_model_train.sql as etlgpdb"
     on_failure: stop
     failure_signal: "psql exits non-zero or prints ERROR"
     depends_on: []
   - id: D2
     surface: jobs_and_deploy
     environments: [dev, prd]
-    action: "Copy src/projects/athletics/src/run_athletics_score_or_update.sh to the host's deploy path; set model_id=5"
+    action: "Copy src/projects/retention/src/run_retention_score_or_update.sh to the host's deploy path; set model_id=5"
     on_failure: stop
     failure_signal: "script missing or not executable on the host"
     depends_on: [D1]
-creates: ["athletics.model_train(text, integer)"]
-drops: ["athletics.model_train(text)"]
+creates: ["retention.model_train(text, integer)"]
+drops: ["retention.model_train(text)"]
 schedule:
-  - what: "run_athletics_score_or_update.sh"
+  - what: "run_retention_score_or_update.sh"
     where: "dev and prd ETL hosts"
     when: "daily 02:00"
 environment:
@@ -82,7 +82,7 @@ environment:
   changed: false
 verify:
   - env: dev
-    check: "select count(*) from athletics.zeus_3gpa_model where model_id = 5  -- expect 1"
+    check: "select count(*) from retention.score_model where model_id = 5  -- expect 1"
 ```
 ````
 
