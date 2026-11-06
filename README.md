@@ -1,4 +1,6 @@
-<img src="docs/icon.webp" width="400" alt="PR Blueprint logo">
+<p align="center">
+  <img src="docs/icon.webp" width="400" alt="PR Blueprint logo">
+</p>
 
 # PR Blueprint
 
