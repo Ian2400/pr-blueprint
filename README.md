@@ -88,6 +88,10 @@ are never overwritten by an upgrade; only the engine files are.
 
 ## What the generated check does
 
+<table>
+<tr>
+<td width="50%" valign="top">
+
 On a developer's branch, before they open a PR:
 
 - **Tracks the work.** Finds or drafts the GitHub issue this PR is for, before
@@ -122,6 +126,15 @@ On a developer's branch, before they open a PR:
 Everything it learns about your team lives in files it generates and never
 overwrites on an engine upgrade: `rules.md`, `canonical.md`, `surfaces.md`,
 `examples.md`, `config.json`. The plugin supplies only the engine.
+
+</td>
+<td width="50%" valign="top">
+
+<img src="docs/generated-check-flow.svg" width="100%" alt="Flow diagram: track the work, scan secrets and PII, scan vulnerabilities, run code checks, review the diff, triage by vote into Fix with AI, Surface, or Note, resolve with risk-tiered fix agents, write the PR description, then open the draft PR.">
+
+</td>
+</tr>
+</table>
 
 See [`skills/repo-pr-check-setup/SKILL.md`](skills/repo-pr-check-setup/SKILL.md)
 for the full mechanics, and its `CHANGELOG.md` for what each version adds.
