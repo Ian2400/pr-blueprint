@@ -1,4 +1,4 @@
-"""Security scan of one branch's own commits: secrets, student data / PII, and committed key or data files.
+"""Security scan of one branch's own commits: secrets, personal data / PII, and committed key or data files.
 
 Scans every commit in BASE..HEAD, not only the final diff: a password added in one commit and deleted in
 the next still ships in the branch's history. Also scans what merge commits add while resolving conflicts,
@@ -305,7 +305,7 @@ NOT_ID_COL = re.compile(
 )
 SENSITIVE_PATH = re.compile(
     r"(?i)covid|contact[_ -]?trac|vaccin|test[_ -]?result|quarantin|health|medical|"
-    r"counsel|disabilit|accommodat|conduct|title[_ -]?ix|financial[_ -]?aid"
+    r"counsel|disabilit|accommodat|disciplinary|background[_ -]?check|benefits"
 )
 
 
@@ -351,9 +351,9 @@ class PiiScanner:
             if vals:
                 hits[name] = {"distinct": len(vals), "lines": where}
         text = "\n".join(lines)
-        if "puid" not in hits and self.id_cols.search(
+        if "org_id" not in hits and self.id_cols.search(
             text
-        ):  # pandas prints PUIDs as ints, dropping the leading 0
+        ):  # pandas prints zero-padded IDs as ints, dropping the leading 0
             rx = re.compile(r"(?<![\d.\-])[1-9]\d{7,8}(?![\d.\-])")
             unpadded = {
                 m.group()
@@ -361,7 +361,7 @@ class PiiScanner:
                 if not self.ignore.search(m.group())
             }
             if len(unpadded) >= 5:
-                hits["puid_unpadded"] = {
+                hits["org_id_unpadded"] = {
                     "distinct": len(unpadded),
                     "lines": [i for i, row in enumerate(lines) if rx.search(row)][:25],
                 }
@@ -411,8 +411,8 @@ def pii_severity(r, path):
     ids = sum(
         h[k]["distinct"]
         for k in (
-            "puid",
-            "puid_unpadded",
+            "org_id",
+            "org_id_unpadded",
             "id_literal",
             "ssn",
             "ssn_ctx",

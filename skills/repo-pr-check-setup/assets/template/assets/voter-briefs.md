@@ -113,7 +113,7 @@ don't fix anything and you don't talk to the developer.
 
 **Never read a flagged file directly.** Don't `cat`, Read, `git show`, or open any
 file the report names, or any data file, image, or PDF: that would put a password or
-a student's record into your transcript. The report holds masked values only. For
+a person's record into your transcript. The report holds masked values only. For
 more context, run
 `python <repo root>/.claude/skills/{{LABEL}}/assets/security/scan_branch.py --repo <repo root> --peek <file>:<line> --commit <commit>`,
 which masks values. Never print a value you infer.
@@ -131,7 +131,7 @@ For each finding:
   `--peek`. A path name alone isn't proof; real passwords in `examples/` are common.
 - `keep` everything else, including anything you couldn't check.
 - `risk` from 1 to 5, using **Risk priorities** first. A secret that looks real,
-  committed credentials, or row-level student data is at least 4.
+  committed credentials, or row-level personal data is at least 4.
 
 **Reply with only this JSON**, one entry per finding, in report order:
 

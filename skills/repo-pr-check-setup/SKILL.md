@@ -5,7 +5,7 @@ description: >
   repository: confirms the repository and the skill's name (e.g.
   widgets-pr-check), sets who owns the review rules (CODEOWNERS), interviews the
   lead about their standards, calibrates triage by having them rate real findings
-  from their recent PRs, sets up its built-in scan for secrets and student data
+  from their recent PRs, sets up its built-in scan for secrets and personal data
   and its code checks (ruff, sqlfluff, shellcheck, plus the team's own linters and
   rule preferences),
   then generates the skill into the repo's
@@ -325,7 +325,7 @@ go-ahead, fold them into `rules.md` on the setup branch before the PR merges.
   without asking.
 - **Snippets and data.** The rating page and `labeled_findings.json` carry short code
   snippets from the repo. Before publishing or committing them, scan for secrets,
-  passwords, tokens, personal identifiers (student or employee IDs, emails, phone
+  passwords, tokens, personal identifiers (employee or customer IDs, emails, phone
   numbers), and internal hostnames or IPs; drop or redact any snippet that has one.
   The rating page is private to the lead unless they share it.
 - **Show before you ask.** The lead sees only your message text, not tool calls,

@@ -186,7 +186,7 @@ check the answer agrees with it.
 ### 11. Secrets & PII scan
 
 Explain in two sentences: before reviewing, the check scans every commit on the
-branch for secrets, student data and other personal identifiers, and committed key or
+branch for secrets, personal data and other identifiers, and committed key or
 data files, and it won't push until each item is removed or the developer explains
 it. Then ask, with AskUserQuestion:
 
@@ -197,11 +197,11 @@ it. Then ask, with AskUserQuestion:
 - **May developers skip the scan for a small change?** Yes (Recommended:
   `/<label> skip-security`, recorded in the PR) / No, always scan
   (`allow_skip: false`).
-- **Which ID formats?** The shipped defaults (Recommended: tuned for a
-  university — student ID, SSN, card numbers, dates of birth, a configurable
-  institutional email domain, ID, grade and health columns) / the shipped
-  defaults plus more. Either way, ask what email domain (if any) should be
-  flagged — the shipped pattern is a placeholder (`example.edu`) that does
+- **Which ID formats?** The shipped defaults (Recommended: a generic internal
+  ID, SSN, card numbers, dates of birth, a configurable email domain, ID, and
+  sensitive-record columns) / the shipped defaults plus more. Either way, ask
+  what email domain(s) should be flagged — the shipped pattern is a placeholder
+  (`example.com`, `example.edu`, `example.gov`) that does
   nothing until replaced. For more, ask what else this repo's data carries
   (employee or donor IDs, a vendor's account numbers, column names their
   extracts use) in words, write them into a repo-owned `security_patterns.json` (a

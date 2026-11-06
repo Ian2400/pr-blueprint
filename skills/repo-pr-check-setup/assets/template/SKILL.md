@@ -4,7 +4,7 @@ description: >
   Runs the {{REPO}} pre-submission check on the current branch before a pull
   request is opened: reviews the branch diff against this repository's rules, sorts
   every finding into Fix with AI / Surface to Developer / Note to Developer, scans
-  the branch's commits for secrets and student data before anything is pushed, runs
+  the branch's commits for secrets and personal data before anything is pushed, runs
   the team's linters (ruff, sqlfluff, shellcheck and others) and fixes the rules the
   developer picks, files a
   GitHub issue per fix, runs fix agents in isolated worktrees while asking the
@@ -89,7 +89,7 @@ Paths are relative to this skill's folder, `.claude/skills/{{LABEL}}/`.
 | `references/revert-plan.md` | engine | How to write the Revert plan section and its parseable block. Read at Phase 3.4. |
 | `assets/fix-agent-brief.md` | engine | The prompt template for every fix agent. Fill it in; do not improvise a new one. |
 | `assets/voter-briefs.md` | engine | The prompt templates for the security voter (Phase 1.0) and the category and risk voters (Phase 1.4). |
-| `assets/security/` | engine | The secrets & PII scan (Phase 1.0): `scan_branch.py`, its gitleaks rules and ID patterns. Scoped to secrets, student data / PII, and committed key or data files only — it has no code-vulnerability logic. |
+| `assets/security/` | engine | The secrets & PII scan (Phase 1.0): `scan_branch.py`, its gitleaks rules and ID patterns. Scoped to secrets, personal data / PII, and committed key or data files only — it has no code-vulnerability logic. |
 | `assets/security/security-audit-skill/` | vendored | The code vulnerability scan (Phase 1.0a): an unmodified copy of [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill). See its `VENDORED.md` before editing anything in this directory, and before updating it to a newer upstream commit. |
 | `assets/security/check_vendor_update.py` | engine | Checks a vendored skill's `VENDOR.json` against its upstream `main` for new commits. Used by `check-vendor-updates` here and by `repo-pr-check-setup`'s own maintenance. |
 | `assets/checks/run_checks.py` | engine | Runs the code checks in `config.json`'s `checks` (Phase 1.0b) and their fixers (Phase 2.0). |
@@ -398,7 +398,7 @@ one commit and deleted in the next still ships in the branch's history. It looks
 
 - secrets: gitleaks, with extra rules for connection strings, URL passwords, SQL
   roles and SAS `pw=`; also credentials typed into notebooks and Office documents;
-- student data and other personal identifiers: PUIDs, SSNs, IDs next to grades or
+- personal identifiers: internal org IDs, SSNs, IDs next to sensitive records or
   health data, in code, data files, spreadsheets, Word, PowerPoint and notebooks;
 - key, credential, `.env` and data files the branch adds;
 - what merge commits add while resolving conflicts, and the commit messages

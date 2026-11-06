@@ -48,7 +48,7 @@
     },
     {
       "id": 5,
-      "prompt": "Set up a PR check for this repo. We use the usual student ID formats, and tests/fixtures has fake passwords on purpose.",
+      "prompt": "Set up a PR check for this repo. We use the usual internal ID formats, and tests/fixtures has fake passwords on purpose.",
       "setup": "Setup state at Step 4, topic 11 (security scan); gitleaks 8.25+ on PATH.",
       "expected_output": "Asks whether to turn the scan on and whether to block pushes, keeps the shipped default patterns, records tests/fixtures in Don't report with the reason, and writes security into config.json.",
       "assertions": [

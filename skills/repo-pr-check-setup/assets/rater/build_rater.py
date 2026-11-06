@@ -19,7 +19,7 @@ KIND_TEXT = {
     "secret": ("Secret committed", "A credential in the code or history. Anyone who can read the repo can use it "
                "until it is rotated."),
     "cred_file": ("Key or credential file committed", "A key, .env or credential file is tracked in git."),
-    "pii": ("Personal data committed", "Identifiers matching the ID patterns, possibly student records."),
+    "pii": ("Personal data committed", "Identifiers matching the ID patterns, possibly personal records."),
     "data_file": ("Data file committed", "A data file was added; the scan found no identifiers, or couldn't read it."),
 }
 

@@ -5,7 +5,7 @@
   {"query": "review my branch before I submit it — fix whatever is obvious and ask me about the rest", "should_trigger": true},
   {"query": "pr check", "should_trigger": true},
   {"query": "{{LABEL}} learn 412", "should_trigger": true},
-  {"query": "check my branch for passwords and student data before I open the PR", "should_trigger": true},
+  {"query": "check my branch for passwords and personal data before I open the PR", "should_trigger": true},
   {"query": "review the PR my teammate opened", "should_trigger": false},
   {"query": "write a PR description for the changes I already pushed", "should_trigger": false},
   {"query": "merge my PR into main", "should_trigger": false},

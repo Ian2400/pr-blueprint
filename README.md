@@ -39,6 +39,9 @@ On a developer's branch, before they open a PR:
 - **Scans for secrets and personal data** in every commit on the branch — not
   just the diff — before reading anything, and won't push until each item is
   removed or explained. Values stay masked; a pushed secret must be rotated.
+  The ID patterns and flagged email domains (shipped as generic placeholders —
+  `example.com`, `example.edu`, `example.gov`) are a per-repo setting the setup
+  interview asks about.
 - **Scans for code vulnerabilities** (auth bypass, injection, unsafe
   deserialization, SSRF, and the rest) with a vendored copy of
   [cloudflare/security-audit-skill](https://github.com/cloudflare/security-audit-skill),
@@ -78,20 +81,6 @@ vendored `cloudflare/security-audit-skill` copy is behind upstream:
 ```
 
 See `VENDORED.md` beside the vendored files for how an update gets applied.
-
-## Tune it for your fork
-
-```
-claude plugin uninstall repo-pr-check-setup
-claude plugin marketplace remove repo-pr-check-setup
-claude plugin marketplace add Ian2400/repo-pr-check-setup
-claude plugin install repo-pr-check-setup@repo-pr-check-setup
-```
-
-The PII scan's defaults (`skills/repo-pr-check-setup/assets/template/assets/security/pii_patterns.json`)
-ship tuned for a university (student IDs, a placeholder institutional email
-domain); the setup interview asks about this per repo, but you may want to
-change the shipped defaults for your own fork.
 
 ## License
 

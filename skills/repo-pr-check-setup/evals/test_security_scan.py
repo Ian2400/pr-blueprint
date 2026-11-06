@@ -24,8 +24,8 @@ NB_PASSWORD = "Nb" + "".join(rnd.choices(string.ascii_letters + string.digits, k
 MERGE_PASSWORD = "Mg" + "".join(rnd.choices(string.ascii_letters + string.digits, k=14))
 MSG_PASSWORD = "Cm" + "".join(rnd.choices(string.ascii_letters + string.digits, k=12))
 SAS_PASSWORD = "Sa" + "".join(rnd.choices(string.ascii_letters + string.digits, k=10))
-PUIDS = ["0" + "".join(rnd.choices(string.digits, k=9)) for _ in range(30)]
-PLANTED = [PASSWORD, TOKEN, NB_PASSWORD, MERGE_PASSWORD, MSG_PASSWORD, SAS_PASSWORD] + PUIDS
+ORG_IDS = ["0" + "".join(rnd.choices(string.digits, k=9)) for _ in range(30)]
+PLANTED = [PASSWORD, TOKEN, NB_PASSWORD, MERGE_PASSWORD, MSG_PASSWORD, SAS_PASSWORD] + ORG_IDS
 PNG = bytes.fromhex("89504e470d0a1a0a0000000d4948445200000001000000010806000000")
 LFS = "version https://git-lfs.github.com/spec/v1\noid sha256:" + "ab" * 32 + "\nsize 123456\n"
 
@@ -72,8 +72,8 @@ def main():
         commit(repo, "add db config", {"app/db.py": f'DB_PASSWORD = "{PASSWORD}"\nHOST = "db"\n'})
         commit(repo, "remove password again", {"app/db.py": 'import os\nDB_PASSWORD = os.environ["DB_PASSWORD"]\n'})
         run(repo, "git", "push", "-q", "origin", "feature/x")  # the password commit is now on the server
-        rows = "\n".join(f"{p},Student {i},3.{i % 10}" for i, p in enumerate(PUIDS))
-        commit(repo, "add extract", {"data/students.csv": "puid,name,gpa\n" + rows + "\n"})
+        rows = "\n".join(f"{p},Employee {i},3.{i % 10}" for i, p in enumerate(ORG_IDS))
+        commit(repo, "add extract", {"data/employees.csv": "org_id,name,rating\n" + rows + "\n"})
         commit(repo, "add env", {".env": f"GITHUB_TOKEN={TOKEN}\n"})
         commit(repo, "example config", {"app/settings.example.py": 'PASSWORD = "your-password-here"\n'})
         nb = {"cells": [{"cell_type": "code", "source": [f'conn = connect(password="{NB_PASSWORD}")\n'],
@@ -115,9 +115,9 @@ def main():
         check(any(f["file"] == ".env" and f["kind"] == "cred_file" for f in fs), "flags a tracked .env file")
         check(any(f["file"] == ".env" and f["kind"] == "secret" and not f["pushed"] for f in fs),
               "finds the token in .env and marks it unpushed")
-        pii = [f for f in fs if f["kind"] == "pii" and f["file"] == "data/students.csv"]
-        check(len(pii) == 1 and pii[0]["severity"] == "high" and pii[0]["distinct"].get("puid") == 30,
-              "flags the student extract as high with 30 distinct PUIDs")
+        pii = [f for f in fs if f["kind"] == "pii" and f["file"] == "data/employees.csv"]
+        check(len(pii) == 1 and pii[0]["severity"] == "high" and pii[0]["distinct"].get("org_id") == 30,
+              "flags the employee extract as high with 30 distinct org IDs")
         check(any(f["file"] == "analysis/explore.ipynb" and f["kind"] == "secret" for f in fs),
               "finds a password typed into a notebook")
         check(not any(f["file"] == "app/settings.example.py" and f["severity"] != "low" for f in fs),
@@ -143,16 +143,16 @@ def main():
         leaked = [v[:4] for v in PLANTED if v in dump]
         check(not leaked, "no planted value appears in the report or output" + (f" (leaked: {leaked})" if leaked else ""))
 
-        p = subprocess.run([sys.executable, SCAN, "--repo", repo, "--peek", "data/students.csv:3"],
+        p = subprocess.run([sys.executable, SCAN, "--repo", repo, "--peek", "data/employees.csv:3"],
                            capture_output=True, text=True, encoding="utf-8")
         check(p.returncode == 0 and not any(v in p.stdout for v in PLANTED), "--peek shows the extract masked")
 
         body = os.path.join(tmp, "pr_body.md")
         with open(body, "w", encoding="utf-8") as fh:
-            fh.write("## Summary\nLoads the extract. Affected students: " + ", ".join(PUIDS[:12]) + "\n")
+            fh.write("## Summary\nLoads the extract. Affected employees: " + ", ".join(ORG_IDS[:12]) + "\n")
         t = subprocess.run([sys.executable, SCAN, "--text", body], capture_output=True, text=True, encoding="utf-8")
         check(t.returncode == 1 and "pii" in t.stdout and not any(v in t.stdout for v in PLANTED),
-              "--text flags PUIDs pasted into a PR description, masked")
+              "--text flags org IDs pasted into a PR description, masked")
 
         clean = subprocess.run([sys.executable, SCAN, "--repo", repo, "--base", "HEAD", "--out",
                                 os.path.join(tmp, "clean.json")], capture_output=True, text=True)
