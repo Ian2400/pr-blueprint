@@ -135,13 +135,11 @@ for the full mechanics, and its `CHANGELOG.md` for what each version adds.
 ## How your bespoke skill learns
 
 Nobody edits `rules.md` by hand during a check. Instead, everything that teaches
-the skill something flows one way, into a rules PR your owners approve:
+the skill something flows one way, into a rules PR your owners approve.
 
-```
-developer overrides a finding ─┐
-reviewer comments on a PR ─────┼─> lesson ─> feedback issue ─> consolidate ─> rules PR ─> CODEOWNERS approve
-developer states a convention ─┘
-```
+<table>
+<tr>
+<td width="50%" valign="top">
 
 - **During a normal run**, any time the developer's answer differs from the
   skill's triage — dropping a planned fix, rejecting one, disagreeing with a
@@ -159,6 +157,15 @@ developer states a convention ─┘
   against `rules.md` and `examples.md` for conflicts, and walks the owner
   through accepting, rejecting, or deferring each one. Accepted changes land in
   one rules PR — `CODEOWNERS` makes the owners its required reviewers.
+
+</td>
+<td width="50%" valign="top">
+
+<img src="docs/how-it-learns-flow.svg" width="100%" alt="Flow diagram: an override, a PR comment, or a stated convention become a lesson, which is filed as a feedback issue, grouped and conflict-checked by consolidate, and opened as one rules PR for CODEOWNERS to approve into rules.md.">
+
+</td>
+</tr>
+</table>
 
 This is also how the ID patterns and linter settings stay accurate: a false
 alarm in the secrets/PII scan or a lint rule the team disagrees with becomes
