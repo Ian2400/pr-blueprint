@@ -1,0 +1,100 @@
+{
+  "skill_name": "repo-pr-check-setup",
+  "notes": "Run against a scratch clone. Stop before anything visible (push, PR, label creation, artifact publish) unless the case says otherwise; grade the transcript and the files written.",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Set up a PR check for this repo.",
+      "setup": "Clone of acme/widgets on master; no .claude/skills/.",
+      "expected_output": "Asks for the repository as host/owner/name (offering origin), confirms a label such as widgets-pr-check, asks for rules owners, and explains CODEOWNERS enforcement depends on branch protection.",
+      "assertions": [
+        "Asks the lead to confirm the repository explicitly, even though origin is set",
+        "Proposes widgets-pr-check (or similar derived from the repo name) and asks for confirmation",
+        "Verifies owners with gh api users/<login>",
+        "Does not change branch protection or git config"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Set up a PR check for git.example.com/acme/billing.",
+      "setup": "Current directory is a clone of acme/widgets.",
+      "expected_output": "Notices the current clone is a different repository and asks for a path to the right clone (or offers to clone it) before continuing.",
+      "assertions": [
+        "Does not generate files into the widgets clone",
+        "Asks for or offers to create a clone of acme/billing"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Generate the skill now, I'll rate later.",
+      "setup": "Setup state at Step 5 with interview answers recorded; label widgets-pr-check.",
+      "expected_output": "Generates .claude/skills/widgets-pr-check/ with calibrated false, an examples.md that says it isn't calibrated, no remaining {{ placeholders, valid config.json, and a CODEOWNERS line appended last.",
+      "assertions": [
+        "grep for '{{' in the generated folder finds nothing",
+        "config.json parses and has calibrated: false",
+        "CODEOWNERS line /.claude/skills/widgets-pr-check/ is the last matching line",
+        "Asks before creating the pr-check-feedback label"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Upgrade our widgets-pr-check to the latest engine.",
+      "setup": "Repo has .claude/skills/widgets-pr-check/ generated at engine 0.2.x with custom rules.md and examples.md.",
+      "expected_output": "Replaces only engine files, keeps rules.md/examples.md/config.json content, bumps engine_version, adds an Engine CHANGELOG line, and shows a diff summary before opening a PR.",
+      "assertions": [
+        "rules.md and examples.md are byte-identical after the upgrade",
+        "config.json engine_version changes and nothing else in it does"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Set up a PR check for this repo. We use the usual student ID formats, and tests/fixtures has fake passwords on purpose.",
+      "setup": "Setup state at Step 4, topic 11 (security scan); gitleaks 8.25+ on PATH.",
+      "expected_output": "Asks whether to turn the scan on and whether to block pushes, keeps the shipped default patterns, records tests/fixtures in Don't report with the reason, and writes security into config.json.",
+      "assertions": [
+        "config.json has security.enabled true, security.block_push true, security.patterns null",
+        "rules.md's Don't report names tests/fixtures and says why",
+        "No security_patterns.json is written",
+        "Runs scan_branch.py once on the setup branch before the setup PR"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Run the PR check on my branch.",
+      "setup": "A repo with a generated check (engine 0.5.0); the branch has one unpushed commit adding a real-looking DB password and a later commit removing it.",
+      "expected_output": "Runs the security scan before reading the diff, keeps the password as a Surface item (risk 5, not pushed, gone from HEAD), files no issue for it, offers to rewrite the unpushed commits, and won't push until it's resolved.",
+      "assertions": [
+        "scan_branch.py runs before any git diff",
+        "The password value never appears in the transcript",
+        "No GitHub issue is filed for the security item",
+        "Offers a soft reset to the last pushed commit (or merge base) before pushing",
+        "The re-scan at Phase 3.5 is clean before the push"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Set up a PR check for this repo.",
+      "setup": "Setup state at Step 4, topic 12 (code checks). The repo has .github/workflows/lint.yml running `ruff check .` and a pyproject.toml with [tool.ruff] select = [\"E\", \"F\"], plus .sql and .sh files and no .sqlfluff.",
+      "expected_output": "Shows what CI runs, reuses pyproject.toml for ruff instead of creating ruff.toml, asks about rule sets, imports (banned imports tied to principles), SQL dialect and shellcheck severity, asks what else the team uses, writes checks into config.json and a Code checks section into rules.md, creates .sqlfluff with the chosen dialect, and runs run_checks.py once.",
+      "assertions": [
+        "No ruff.toml is created; pyproject.toml's [tool.ruff] is edited only with the lead's approval",
+        "config.json checks.items has ruff (mirrors_ci set), sqlfluff and shellcheck",
+        "rules.md's Code checks rules each have an ID, the tool setting, a Why and a Source",
+        "Asks 'what else does your team use' before writing checks",
+        "run_checks.py reports every check as ran or no_files"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Run the PR check on my branch.",
+      "setup": "Repo with a generated check (engine 0.7.0, scope changed_files). The branch adds one unused import (ruff F401, auto-fixable), one unquoted variable in a shell script (SC2086), and touches a file that already had an E501.",
+      "expected_output": "Reports the lint groups with changed vs elsewhere counts before fixing anything, asks whether to include 'elsewhere', lets the developer pick; picking F401 and SC2086 yields two Lint: commits and no GitHub issues; the unpicked E501 appears in the PR description's code checks section.",
+      "assertions": [
+        "No lint fix is applied before the developer picks",
+        "Exactly two commits starting with 'Lint:' are added",
+        "No GitHub issue is filed for a lint finding",
+        "pyproject.toml and .shellcheckrc are unchanged on the feature branch"
+      ]
+    }
+  ]
+}

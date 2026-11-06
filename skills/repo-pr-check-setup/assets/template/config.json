@@ -1,0 +1,16 @@
+{
+  "generator": "repo-pr-check-setup",
+  "engine_version": "{{ENGINE_VERSION}}",
+  "label": "{{LABEL}}",
+  "host": "{{HOST}}",
+  "repo": "{{REPO}}",
+  "owners": {{OWNERS_JSON}},
+  "feedback_label": "pr-check-feedback",
+  "deferred_label": {{DEFERRED_LABEL_JSON}},
+  "work_issue": {"policy": "{{ISSUE_POLICY}}"},
+  "calibrated": {{CALIBRATED}},
+  "fix_agents": {{FIX_AGENTS_JSON}},
+  "security": {{SECURITY_JSON}},
+  "checks": {{CHECKS_JSON}},
+  "pr_description": {{PR_DESCRIPTION_JSON}}
+}

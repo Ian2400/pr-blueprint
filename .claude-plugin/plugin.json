@@ -1,0 +1,8 @@
+{
+  "name": "repo-pr-check-setup",
+  "version": "1.0.0",
+  "description": "Generates a bespoke, repo-owned pre-PR review skill: interviews your team, calibrates on real findings, scans for secrets/PII and code vulnerabilities, fixes clear-cut issues with agents, and opens the PR.",
+  "author": { "name": "Ian Pytlarz" },
+  "license": "MIT",
+  "homepage": "https://github.com/<your-github-username>/repo-pr-check-setup"
+}

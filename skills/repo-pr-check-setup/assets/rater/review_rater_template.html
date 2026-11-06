@@ -1,0 +1,338 @@
+<title>PR Review Calibration</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky PR rail on the left, one column of finding cards on the right; rail becomes a scrolling chip row on phones. */
+:root {
+  --bg: #f6f6f3;
+  --surface: #ffffff;
+  --sunk: #eeede8;
+  --fg: #1d2024;
+  --muted: #5f646b;
+  --line: #dcdad2;
+  --accent: #8a6d1f;
+  --accent-soft: #f3ead2;
+  --good: #2f7a4a;   --good-soft: #e1f0e6;
+  --warn: #9a6a0b;   --warn-soft: #f7ecd2;
+  --bad: #b23b32;    --bad-soft: #f8e1de;
+  --off: #59616c;    --off-soft: #e7e9ec;
+  --font-ui: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", Consolas, "Courier New", monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #15171a; --surface: #1d2024; --sunk: #24282d; --fg: #e8e6e0; --muted: #a0a4aa; --line: #33373d;
+  --accent: #d8b75e; --accent-soft: #3a3220;
+  --good: #6cc48c; --good-soft: #1f3327; --warn: #e2b04c; --warn-soft: #3a3020;
+  --bad: #ee7d72; --bad-soft: #3d2422; --off: #a8b0ba; --off-soft: #2b2f35;
+  color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #15171a; --surface: #1d2024; --sunk: #24282d; --fg: #e8e6e0; --muted: #a0a4aa; --line: #33373d;
+  --accent: #d8b75e; --accent-soft: #3a3220;
+  --good: #6cc48c; --good-soft: #1f3327; --warn: #e2b04c; --warn-soft: #3a3020;
+  --bad: #ee7d72; --bad-soft: #3d2422; --off: #a8b0ba; --off-soft: #2b2f35;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-ui); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 24px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; margin-bottom: 20px; }
+h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); margin: 4px 0 0; max-width: 62ch; }
+.overall { min-width: 220px; }
+.overall .lbl { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); display: flex; justify-content: space-between; font-variant-numeric: tabular-nums; }
+.bar { height: 6px; background: var(--sunk); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+.bar > i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .3s; }
+.banner { background: var(--warn-soft); color: var(--fg); border: 1px solid var(--line); padding: 10px 14px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
+.legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px 20px; font-size: 13px; color: var(--muted); margin-bottom: 22px; }
+.legend b { color: var(--fg); font-weight: 600; }
+.layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 28px; align-items: start; }
+nav.rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); display: flex; flex-direction: column; gap: 4px; }
+.rail-head { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 6px 10px; }
+.pr-btn { all: unset; cursor: pointer; display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 9px 10px; border-radius: 8px; }
+.pr-btn:hover { background: var(--sunk); }
+.pr-btn[aria-current="true"] { background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
+.pr-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.pr-btn .num { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.pr-btn .t { grid-column: 1 / -1; font-size: 14px; font-weight: 500; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.pr-btn .cnt { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--muted); }
+.pr-btn.done .cnt { color: var(--good); font-weight: 600; }
+.toggle { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--muted); margin: 12px 0 0 10px; cursor: pointer; }
+main { min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+.pr-head { display: flex; flex-direction: column; gap: 4px; padding-bottom: 6px; }
+.pr-head h2 { margin: 0; font-size: 21px; font-weight: 650; text-wrap: balance; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); }
+.meta a { color: var(--accent); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; border-left-width: 4px; }
+.card[data-v="fix"] { border-left-color: var(--good); }
+.card[data-v="surface"] { border-left-color: var(--accent); }
+.card[data-v="note"] { border-left-color: var(--warn); }
+.card[data-v="drop"] { border-left-color: var(--off); }
+.card-top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 12.5px; color: var(--muted); }
+.rank { font-family: var(--font-mono); font-weight: 500; color: var(--fg); }
+.loc { font-family: var(--font-mono); overflow-wrap: anywhere; }
+.chip { font-size: 11.5px; padding: 2px 8px; border-radius: 99px; background: var(--sunk); color: var(--muted); letter-spacing: 0.02em; }
+.chip.conf { background: var(--accent-soft); color: var(--accent); }
+.chip.skill { font-weight: 600; }
+.chip.skill[data-c="Fix with AI"] { background: var(--good-soft); color: var(--good); }
+.chip.skill[data-c="Surface to Developer"] { background: var(--accent-soft); color: var(--accent); }
+.chip.skill[data-c="Note to Developer"] { background: var(--warn-soft); color: var(--warn); }
+.chip.skill[data-c="Dropped"] { background: var(--off-soft); color: var(--off); }
+.chip.sec { background: var(--bad-soft); color: var(--bad); font-weight: 600; }
+.chip.agree { background: var(--good-soft); color: var(--good); }
+.chip.differ { background: var(--bad-soft); color: var(--bad); }
+.pr-note { margin: 6px 0 0; font-size: 14px; color: var(--muted); max-width: 75ch; background: var(--sunk); border-radius: 8px; padding: 10px 12px; }
+.card h3 { margin: 0; font-size: 16.5px; font-weight: 600; line-height: 1.35; }
+.card p { margin: 0; max-width: 75ch; }
+.scen { font-size: 14px; color: var(--muted); }
+.scen b { color: var(--fg); font-weight: 600; }
+pre.snip { margin: 0; background: var(--sunk); border-radius: 6px; padding: 10px 12px; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.5; overflow-x: auto; white-space: pre; }
+.rate { display: flex; flex-direction: column; gap: 10px; border-top: 1px dashed var(--line); padding-top: 12px; margin-top: 2px; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.row > .rl { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); min-width: 64px; }
+.seg { all: unset; cursor: pointer; font-size: 13.5px; padding: 5px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); }
+.seg:hover { border-color: var(--muted); }
+.seg:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.seg[aria-pressed="true"][data-k="fix"] { background: var(--good-soft); border-color: var(--good); color: var(--good); font-weight: 600; }
+.seg[aria-pressed="true"][data-k="surface"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.seg[aria-pressed="true"][data-k="note"] { background: var(--warn-soft); border-color: var(--warn); color: var(--warn); font-weight: 600; }
+.seg[aria-pressed="true"][data-k="drop"] { background: var(--off-soft); border-color: var(--off); color: var(--off); font-weight: 600; }
+.seg[aria-pressed="true"]:not([data-k]) { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.tag { font-size: 12.5px; padding: 3px 10px; border-radius: 99px; }
+.seg.risk { min-width: 30px; text-align: center; }
+.seg.risk[aria-pressed="true"][data-r="1"], .seg.risk[aria-pressed="true"][data-r="2"] { background: var(--good-soft); border-color: var(--good); color: var(--good); font-weight: 600; }
+.seg.risk[aria-pressed="true"][data-r="3"] { background: var(--warn-soft); border-color: var(--warn); color: var(--warn); font-weight: 600; }
+.seg.risk[aria-pressed="true"][data-r="4"], .seg.risk[aria-pressed="true"][data-r="5"] { background: var(--bad-soft); border-color: var(--bad); color: var(--bad); font-weight: 600; }
+.risk-hint { font-size: 12.5px; color: var(--muted); }
+textarea { width: 100%; min-height: 58px; resize: vertical; font: inherit; font-size: 14px; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+textarea:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
+.saved { font-size: 12px; color: var(--muted); min-height: 1em; }
+.missed { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+.missed h3 { margin: 0; font-size: 16px; }
+.missed p { margin: 0; color: var(--muted); font-size: 14px; }
+.empty { color: var(--muted); padding: 30px 0; }
+@media (max-width: 820px) {
+  .layout { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  nav.rail { position: static; flex-direction: row; overflow-x: auto; padding-bottom: 4px; }
+  .rail-head, .toggle { display: none; }
+  .pr-btn { min-width: 170px; }
+}
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>PR Review Calibration</h1>
+      <p class="sub">__SUBTITLE__</p>
+    </div>
+    <div class="overall">
+      <div class="lbl"><span>Your progress</span><span id="ov-n">0 / 0</span></div>
+      <div class="bar"><i id="ov-bar"></i></div>
+    </div>
+  </header>
+  <div class="banner" id="banner" hidden></div>
+  <div class="legend">
+    <div><b>Fix with AI</b> — a clear defect with one obviously right fix. An issue is filed and an agent fixes it.</div>
+    <div><b>Surface to Developer</b> — real, but the developer's context or choice decides the fix. They're asked about it.</div>
+    <div><b>Note to Developer</b> — true but minor. Listed for the developer; kept notes go in the PR description.</div>
+    <div><b>Drop</b> — shouldn't be reported: wrong, deliberate under a team principle, or not something we review for.</div>
+    <div><b>Security scan</b> findings show masked values only. The check always asks the developer about these; rate whether it <i>should</i> (Surface), or whether it's noise (Note or Drop, with why), and how risky it is.</div>
+    <div><b>Risk 1–5</b> — how much damage if this ships unfixed or a fix for it is wrong: 1 cosmetic, 3 contained but visible, 5 corrupts data people rely on. Fixes at 4–5 need the developer's sign-off.</div>
+  </div>
+  <div class="layout">
+    <nav class="rail" id="rail" aria-label="Pull requests"></nav>
+    <main id="main"><p class="empty">Loading findings…</p></main>
+  </div>
+</div>
+
+<script type="application/json" id="review-data">/*__DATA__*/</script>
+<script>
+const DATA = JSON.parse(document.getElementById('review-data').textContent);
+const CATEGORIES = [["fix","Fix with AI"],["surface","Surface to Developer"],["note","Note to Developer"],["drop","Drop"]];
+const DROP_REASONS = [["wrong","Wrong"],["principle","Deliberate (team principle)"],["scope","Not our concern"]];
+const RISKS = [[1, "Cosmetic: no effect on behavior or data"], [2, "Minor: wrong in rare cases, easy to notice and undo"], [3, "Moderate: a user or job would hit it, but contained and visible"], [4, "High: silently wrong data, wrong model inputs or outputs, a broken scheduled job, a security gap"], [5, "Critical: corrupts production data or data people rely on, exposes data"]];
+const isDone = r => !!(r && r.category && (r.risk || r.category === 'drop'));
+const SKILL_KEY = { "Fix with AI": "fix", "Surface to Developer": "surface", "Note to Developer": "note", "Dropped": "drop" };
+const PLACEHOLDER = {
+  fix: 'Optional: anything about how it should be fixed or worded?',
+  surface: 'Optional: what context decides the fix? How would you choose?',
+  note: 'Optional: why is this minor rather than a decision?',
+  drop: 'Optional: what makes this not worth flagging for us?'
+};
+const TAGS = ["Style / naming","Hypothetical edge case","Intentional by design","Defensive overkill","Perf micro-opt","Needs domain context","Docs / comments","Tests","Greenplum / SQL specific","Security"];
+
+let db = null, me = null;
+const mine = {};        // findingId -> rating doc
+const notes = {};       // pr -> note doc
+const others = {};      // findingId -> Set of other rater ids
+let current = DATA.prs[0] ? DATA.prs[0].pr : null;
+let unratedOnly = false;
+try { const h = location.hash.replace('#pr',''); if (DATA.prs.some(p => String(p.pr) === h)) current = Number(h); } catch (e) {}
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'text') n.textContent = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else if (v !== null && v !== undefined && v !== false) n.setAttribute(k, v);
+  }
+  for (const c of kids) if (c) n.append(c);
+  return n;
+};
+
+// one in-flight write per doc, latest value wins
+const queues = {};
+function save(path, body, statusEl) {
+  if (!db) { if (statusEl) statusEl.textContent = 'Not saved: storage unavailable in this view'; return; }
+  const q = queues[path] || (queues[path] = { busy: false, next: null });
+  q.next = body;
+  if (statusEl) statusEl.textContent = 'Saving…';
+  if (q.busy) return;
+  (async function run() {
+    q.busy = true;
+    while (q.next) {
+      const b = q.next; q.next = null;
+      try { await db.doc(path).set(b); if (statusEl) statusEl.textContent = 'Saved'; }
+      catch (e) { if (statusEl) statusEl.textContent = e && e.code === 'invalid_argument' ? 'You do not have permission to save here' : 'Could not save, try again'; }
+    }
+    q.busy = false;
+  })();
+}
+
+function ratingFor(id) { return mine[id] || { category: null, drop_reason: null, risk: null, tags: [], note: '' }; }
+function commit(f, pr, patch, statusEl) {
+  const r = Object.assign({}, ratingFor(f.id), patch);
+  if (r.category !== 'drop') r.drop_reason = null;
+  r.finding = f.id; r.pr = pr.pr; r.rater = me; r.updatedAt = new Date().toISOString();
+  r.skill_category = f.skill_category ? SKILL_KEY[f.skill_category] || null : null;
+  r.skill_risk = f.skill_risk || null;
+  r.file = f.file || null; r.short_summary = f.short_summary || null; r.source = f.source || 'review';
+  mine[f.id] = r;
+  save('ratings/' + f.id + '~' + me, r, statusEl);
+}
+
+function renderRail() {
+  const rail = document.getElementById('rail');
+  rail.replaceChildren(el('div', { class: 'rail-head', text: 'Pull requests' }));
+  let tot = 0, done = 0;
+  for (const pr of DATA.prs) {
+    const n = pr.findings.length, d = pr.findings.filter(f => isDone(mine[f.id])).length;
+    tot += n; done += d;
+    rail.append(el('button', { class: 'pr-btn' + (n && d === n ? ' done' : ''), 'aria-current': String(pr.pr === current), onclick: () => { current = pr.pr; try { history.replaceState(null, '', '#pr' + pr.pr); } catch (e) {} renderRail(); renderMain(); window.scrollTo({ top: 0 }); } },
+      el('span', { class: 'num', text: '#' + pr.pr + ' · ' + pr.author }),
+      el('span', { class: 'cnt', text: d + ' / ' + n }),
+      el('span', { class: 't', text: pr.title })));
+  }
+  const lab = el('label', { class: 'toggle' }, el('input', { type: 'checkbox', id: 'unrated', onchange: e => { unratedOnly = e.target.checked; renderMain(); } }), el('span', { text: 'Show unrated only' }));
+  lab.querySelector('input').checked = unratedOnly;
+  rail.append(lab);
+  document.getElementById('ov-n').textContent = done + ' / ' + tot;
+  document.getElementById('ov-bar').style.width = (tot ? (100 * done / tot) : 0) + '%';
+}
+
+function renderCard(f, pr, idx) {
+  const r = ratingFor(f.id);
+  const status = el('span', { class: 'saved' });
+  const card = el('article', { class: 'card', 'data-v': r.category || '', id: 'f-' + f.id });
+  const skillKey = f.skill_category ? SKILL_KEY[f.skill_category] : null;
+  const rerender = () => { card.replaceWith(renderCard(f, pr, idx)); renderRail(); };
+  const top = el('div', { class: 'card-top' },
+    el('span', { class: 'rank', text: '#' + (idx + 1) }),
+    el('span', { class: 'loc', text: (f.file || '') + (f.line ? ':' + f.line : '') }),
+    f.source === 'security' ? el('span', { class: 'chip sec', text: 'Security scan' }) : null,
+    f.skill_category ? el('span', { class: 'chip skill', 'data-c': f.skill_category, text: 'Skill: ' + f.skill_category }) : null,
+    skillKey && r.category ? el('span', { class: 'chip ' + (skillKey === r.category ? 'agree' : 'differ'), text: skillKey === r.category ? 'Matches skill' : 'Differs from skill' }) : null,
+    f.skill_risk ? el('span', { class: 'chip skill', text: 'Skill risk: ' + f.skill_risk }) : null,
+    f.skill_risk && r.risk ? el('span', { class: 'chip ' + (f.skill_risk === r.risk ? 'agree' : 'differ'), text: f.skill_risk === r.risk ? 'Risk matches' : 'Risk differs by ' + Math.abs(f.skill_risk - r.risk) }) : null,
+    f.edge_case ? el('span', { class: 'chip', text: 'edge case' }) : null,
+    others[f.id] && others[f.id].size ? el('span', { class: 'chip', text: others[f.id].size + ' other rating' + (others[f.id].size > 1 ? 's' : '') }) : null);
+  card.append(top, el('h3', { text: f.short_summary || f.summary }));
+  if (f.short_summary && f.summary && f.summary !== f.short_summary) card.append(el('p', { text: f.summary }));
+  if (f.failure_scenario) card.append(el('p', { class: 'scen' }, el('b', { text: 'Scenario: ' }), document.createTextNode(f.failure_scenario)));
+  for (const x of (f.extra || [])) card.append(el('p', { class: 'scen' }, el('b', { text: x.label + ': ' }), document.createTextNode(x.text)));
+  if (f.snippet) card.append(el('pre', { class: 'snip', text: f.snippet }));
+
+  const rate = el('div', { class: 'rate' });
+  const crow = el('div', { class: 'row', role: 'group', 'aria-label': 'Category' }, el('span', { class: 'rl', text: 'Category' }));
+  for (const [k, label] of CATEGORIES) crow.append(el('button', { class: 'seg', 'data-k': k, 'aria-pressed': String(r.category === k), onclick: () => { commit(f, pr, { category: r.category === k ? null : k }, null); rerender(); } , text: label }));
+  rate.append(crow);
+  if (r.category === 'drop') {
+    const drow = el('div', { class: 'row', role: 'group', 'aria-label': 'Why drop' }, el('span', { class: 'rl', text: 'Drop as' }));
+    for (const [k, label] of DROP_REASONS) drow.append(el('button', { class: 'seg', 'aria-pressed': String(r.drop_reason === k), onclick: () => { commit(f, pr, { drop_reason: r.drop_reason === k ? null : k }, null); rerender(); }, text: label }));
+    rate.append(drow);
+  }
+  const rrow = el('div', { class: 'row', role: 'group', 'aria-label': 'Risk' }, el('span', { class: 'rl', text: 'Risk' }));
+  for (const [k, desc] of RISKS) rrow.append(el('button', { class: 'seg risk', 'data-r': String(k), title: desc, 'aria-label': 'Risk ' + k + ': ' + desc, 'aria-pressed': String(r.risk === k), onclick: () => { commit(f, pr, { risk: r.risk === k ? null : k }, null); rerender(); }, text: String(k) }));
+  const rdesc = r.risk ? RISKS[r.risk - 1][1] + (r.category === 'fix' && r.risk >= 4 ? '. As Fix with AI, this would wait for the developer\'s sign-off.' : r.category === 'note' && r.risk >= 4 ? '. At this risk, a Note becomes Surface.' : '') : (r.category === 'drop' ? 'Optional for dropped findings.' : '');
+  if (rdesc) rrow.append(el('span', { class: 'risk-hint', text: rdesc }));
+  rate.append(rrow);
+  if (r.category) {
+    const trow = el('div', { class: 'row', role: 'group', 'aria-label': 'Reasons' }, el('span', { class: 'rl', text: 'Why' }));
+    for (const t of TAGS) {
+      const on = (r.tags || []).includes(t);
+      trow.append(el('button', { class: 'seg tag', 'aria-pressed': String(on), onclick: () => { const tags = new Set(ratingFor(f.id).tags || []); on ? tags.delete(t) : tags.add(t); commit(f, pr, { tags: [...tags] }, null); rerender(); }, text: t }));
+    }
+    rate.append(trow);
+  }
+  let timer;
+  const ta = el('textarea', { id: 'note-' + f.id, placeholder: PLACEHOLDER[r.category] || 'Optional: why this category?', oninput: e => { clearTimeout(timer); status.textContent = ''; const v = e.target.value; timer = setTimeout(() => commit(f, pr, { note: v }, status), 700); } });
+  ta.value = r.note || '';
+  rate.append(ta, status);
+  card.append(rate);
+  return card;
+}
+
+function renderMain() {
+  const main = document.getElementById('main');
+  const pr = DATA.prs.find(p => p.pr === current);
+  if (!pr) { main.replaceChildren(el('p', { class: 'empty', text: 'No reviews loaded yet.' })); return; }
+  const head = el('div', { class: 'pr-head' },
+    el('h2', { text: pr.title }),
+    el('div', { class: 'meta' },
+      el('span', { text: '#' + pr.pr + ' by ' + pr.author }),
+      el('span', { text: pr.findings.length + ' findings · ' + (pr.note ? pr.level : 'default review level') }),
+      el('a', { href: pr.url, target: '_blank', rel: 'noopener', text: 'Open on GitHub' })),
+    pr.note ? el('p', { class: 'pr-note', text: pr.note }) : null);
+  const cards = [];
+  pr.findings.forEach((f, i) => { if (!unratedOnly || !(isDone(mine[f.id]))) cards.push(renderCard(f, pr, i)); });
+  if (!cards.length) cards.push(el('p', { class: 'empty', text: pr.findings.length ? 'Every finding on this PR is rated.' : 'The review produced no findings for this PR.' }));
+
+  const n = notes[pr.pr] || { missed: '', overall: null };
+  const st = el('span', { class: 'saved' });
+  let timer;
+  const commitNote = patch => { const b = Object.assign({}, notes[pr.pr] || { missed: '', overall: null }, patch, { pr: pr.pr, rater: me, updatedAt: new Date().toISOString() }); notes[pr.pr] = b; save('prnotes/' + pr.pr + '~' + me, b, st); };
+  const ta = el('textarea', { id: 'missed-' + pr.pr, placeholder: 'e.g. "Didn\'t notice the function drops and recreates the table without re-granting permissions."', oninput: e => { clearTimeout(timer); const v = e.target.value; timer = setTimeout(() => commitNote({ missed: v }), 700); } });
+  ta.value = n.missed || '';
+  const orow = el('div', { class: 'row', role: 'group', 'aria-label': 'Overall' }, el('span', { class: 'rl', text: 'Overall' }));
+  for (const [k, label] of [["good","Helpful review"],["mixed","Mixed"],["noise","Mostly noise"]]) orow.append(el('button', { class: 'seg', 'aria-pressed': String(n.overall === k), onclick: () => { commitNote({ overall: n.overall === k ? null : k }); renderMain(); }, text: label }));
+  const missed = el('section', { class: 'missed' },
+    el('h3', { text: 'What did the review miss?' }),
+    el('p', { text: 'Anything a good reviewer on our team would have raised on this PR that is not in the list above.' }),
+    orow, ta, st);
+  main.replaceChildren(head, ...cards, missed);
+}
+
+renderRail(); renderMain();
+
+(async () => {
+  const banner = document.getElementById('banner');
+  const [d, u] = await Promise.all([window.claude?.use('db'), window.claude?.use('user')]);
+  me = u ? await u.id() : null;
+  if (!d || !me) { banner.hidden = false; banner.textContent = 'Ratings can\'t be saved in this view. Open the page signed in to claude.ai to record ratings.'; return; }
+  db = d;
+  db.collection('ratings').onSnapshot(snap => {
+    for (const k of Object.keys(others)) delete others[k];
+    for (const doc of snap.docs) {
+      const b = doc.data(); if (!b) continue;
+      if (b.rater === me) { if (!mine[b.finding] || !queues['ratings/' + b.finding + '~' + me]?.busy) mine[b.finding] = b; }
+      else (others[b.finding] || (others[b.finding] = new Set())).add(b.rater);
+    }
+    renderRail(); if (!document.activeElement || document.activeElement.tagName !== 'TEXTAREA') renderMain();
+  }, () => { banner.hidden = false; banner.textContent = 'Lost the connection to saved ratings. Reload the page to reconnect.'; });
+  db.collection('prnotes').onSnapshot(snap => {
+    for (const doc of snap.docs) { const b = doc.data(); if (b && b.rater === me) notes[b.pr] = b; }
+    if (!document.activeElement || document.activeElement.tagName !== 'TEXTAREA') renderMain();
+  });
+})();
+</script>

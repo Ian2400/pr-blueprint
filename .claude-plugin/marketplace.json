@@ -1,0 +1,14 @@
+{
+  "$schema": "https://www.schemastore.org/claude-code-marketplace.json",
+  "name": "repo-pr-check-setup",
+  "description": "Generate a bespoke, repo-owned pre-PR review skill for Claude Code.",
+  "owner": { "name": "Ian Pytlarz" },
+  "plugins": [
+    {
+      "name": "repo-pr-check-setup",
+      "source": "./",
+      "description": "Interviews your team, calibrates on real findings, scans for secrets/PII and code vulnerabilities, fixes clear-cut issues with agents, and opens the PR.",
+      "category": "productivity"
+    }
+  ]
+}

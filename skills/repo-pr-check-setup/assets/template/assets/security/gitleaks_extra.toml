@@ -1,0 +1,208 @@
+# Default gitleaks rules plus patterns the defaults missed in the acme/widgets review.
+
+[extend]
+useDefault = true
+
+# Credentials inside connection URLs, e.g. PXF/JDBC LOCATION('pxf://...&USER=x&PASS=secret')
+[[rules]]
+id = "url-param-password"
+description = "Password passed as a URL / connection-string parameter"
+regex = '''(?i)[?&;](?:pass|password|pwd)=([^&'"\s;)]{4,})'''
+secretGroup = 1
+keywords = ["pass=", "password=", "pwd="]
+
+  [[rules.allowlists]]
+  regexTarget = "secret"
+  regexes = ['''(?i)^(\$|\{|<|%|\*+$|x{3,}|your|change|example|placeholder|dummy|password$)''']
+
+# password = 'literal' in code (quoted, so variable references don't match). The key may carry a prefix
+# (DB_PASSWORD, POSTGRES_PASSWORD, spring.datasource.password, ldap_pass) but must end in the password word,
+# so password_hash or POSTGRES_PASSWORD_FILE don't match.
+[[rules]]
+id = "password-assignment"
+description = "Hardcoded password literal"
+regex = '''(?i)\b(?:(?:[\w.-]*[_.-])?(?:password|passwd|pwd)|[\w.-]*[_-]pass)\b["']?\s*[:=]\s*["']([^"'\s]{6,})["']'''
+secretGroup = 1
+keywords = ["password", "passwd", "pwd", "_pass", "-pass"]
+
+  [[rules.allowlists]]
+  regexTarget = "secret"
+  regexes = ['''(?i)^(\$|\{|<|%|\*+$|x{3,}|your|change|example|placeholder|dummy|none|null|password_here|enter|pass123)''']
+
+# password: literal at line end (YAML incl. compose `environment:` maps, .cred / .txt connection files)
+[[rules]]
+id = "password-colon-line"
+description = "Password in a key: value config or cred file"
+regex = '''(?im)^\s*(?:(?:[\w.-]*[_.-])?(?:password|passwd|pwd)|[\w.-]*[_-]pass)\s*:\s*([^\s"'#]{6,})\s*$'''
+secretGroup = 1
+keywords = ["password", "passwd", "pwd", "_pass", "-pass"]
+
+  [[rules.allowlists]]
+  regexTarget = "secret"
+  regexes = ['''(?i)^(\$|\{|<|%|\*+$|x{3,}|your|change|example|placeholder|dummy|none|null|password_here|enter)''']
+
+# docker-compose `environment:` lists: - POSTGRES_PASSWORD=secret
+[[rules]]
+id = "yaml-env-password"
+description = "Password in a YAML / compose environment list entry"
+regex = '''(?im)^\s*-\s*["']?(?:(?:[\w.-]*[_.-])?(?:password|passwd|pwd)|[\w.-]*[_-]pass)\s*=\s*([^\s"'#]{4,})["']?\s*$'''
+path = '''(?i)\.ya?ml$'''
+secretGroup = 1
+keywords = ["password", "passwd", "pwd", "_pass", "-pass"]
+
+  [[rules.allowlists]]
+  regexTarget = "secret"
+  regexes = ['''(?i)^(\$|\{|<|%|\*+$|x{3,}|your|change|example|placeholder|dummy|none|null|true|false|password_here|enter)''']
+
+# Azure Entra / MSAL client secrets assigned to a CLIENT_SECRET-like name
+[[rules]]
+id = "client-secret-assignment"
+description = "OAuth / Entra client secret literal"
+regex = '''(?i)\bclient_?secret\b["']?\s*[:=]\s*["']([^"'\s<{$]{16,})["']'''
+secretGroup = 1
+keywords = ["client_secret", "clientsecret"]
+
+  [[rules.allowlists]]
+  regexTarget = "secret"
+  regexes = ['''(?i)^(your|x{3,}|example|placeholder|dummy|changeme)''']
+
+# Below: patterns from a review against TruffleHog / GitHub secret-scanning / OWASP coverage that gitleaks' defaults lack.
+
+# scheme://user:password@host (Postgres/Greenplum, MySQL, Mongo, Redis, LDAP, FTP, HTTP basic auth)
+[[rules]]
+id = "uri-userinfo-password"
+description = "Password embedded in a connection URI"
+regex = '''(?i)\b(?:postgres(?:ql)?|greenplum|mysql|mariadb|mongodb(?:\+srv)?|rediss?|mssql|sqlserver|oracle|db2|ldaps?|s?ftp|amqps?|smtps?|https?)://[^\s:/@'"]{1,64}:([^\s@'"/]{3,128})@[\w.-]+'''
+secretGroup = 1
+keywords = ["://"]
+
+  [[rules.allowlists]]
+  regexTarget = "secret"
+  regexes = ['''(?i)^(\$|\{|<|%|\*+$|x{3,}|your|change|example|placeholder|dummy|pass(word)?$|pwd$|secret$)''']
+
+# jdbc:oracle:thin:user/password@host
+[[rules]]
+id = "jdbc-oracle-password"
+description = "Password in an Oracle JDBC URL"
+regex = '''(?i)jdbc:oracle:(?:thin|oci):[\w$#.]+/([^@\s'"]{3,})@'''
+secretGroup = 1
+keywords = ["jdbc:oracle"]
+
+  [[rules.allowlists]]
+  regexTarget = "secret"
+  regexes = ['''(?i)^(\$|\{|<|%|\*+$|x{3,}|your|example|placeholder|pass(word)?$)''']
+
+# CREATE/ALTER USER|ROLE|LOGIN ... PASSWORD 'x' (Greenplum/Postgres/MSSQL DDL)
+[[rules]]
+id = "sql-role-password"
+description = "Password set in SQL DDL"
+regex = '''(?i)\b(?:create|alter)\s+(?:user|role|login)\b[^;]{0,200}?\bpassword\s*=?\s*'([^'\s]{4,})'''
+secretGroup = 1
+keywords = ["password"]
+
+  [[rules.allowlists]]
+  regexTarget = "secret"
+  regexes = ['''(?i)^(\$|\{|<|%|:|&|\*+$|x{3,}|your|change|example|placeholder|dummy|pass(word)?$)''']
+
+# Oracle: CREATE/ALTER USER ... IDENTIFIED BY password (DDL only: "identified by" is common English)
+[[rules]]
+id = "sql-identified-by"
+description = "Password in an Oracle IDENTIFIED BY clause"
+regex = '''(?i)\b(?:create|alter)\s+user\b[^;]{0,120}?\bidentified\s+by\s+"?([^\s";']{4,})'''
+secretGroup = 1
+keywords = ["identified"]
+
+  [[rules.allowlists]]
+  regexTarget = "secret"
+  regexes = ['''(?i)^(values|externally|globally|\$|\{|<|%|:|&|x{3,}|your|example|placeholder|pass(word)?$)''']
+
+# password=value lines in ini / ODBC / .my.cnf / cred files (unquoted; limited to config files so code variables don't match)
+[[rules]]
+id = "password-equals-config-line"
+description = "Password in a key=value config / ODBC / cred file"
+regex = '''(?im)^\s*(?:export\s+)?(?:[\w.-]*[_.-])?(?:password|passwd|pwd|pass)\s*=\s*([^\s"'#;]{4,})\s*$'''
+path = '''(?i)(\.(ini|cfg|conf|cnf|properties|txt|cred|creds|env|dsn)$|(^|/)\.env(\.[\w-]+)?$|(^|/)\.?(odbc\.ini|my\.cnf|pgpass|netrc|Renviron)$)'''
+secretGroup = 1
+keywords = ["pass", "pwd"]
+
+  [[rules.allowlists]]
+  regexTarget = "secret"
+  regexes = ['''(?i)^(\$|\{|<|%|\*+$|x{3,}|your|change|example|placeholder|dummy|none|null|true|false|password_here|enter)''']
+
+# PGPASSWORD=x, MYSQL_PWD=x, LDAP bindpw x, sshpass -p x
+[[rules]]
+id = "db-password-env"
+description = "Database / LDAP password in an environment variable or command line"
+regex = '''(?i)(?:\b(?:PGPASSWORD|MYSQL_PWD|ISQL_PASSWORD|bind_?pw|bindpassword)\s*[=:]|\bsshpass\s+-p)\s*['"]?([^\s'";$]{4,})'''
+secretGroup = 1
+keywords = ["pgpassword", "mysql_pwd", "isql_password", "bindpw", "bind_pw", "bindpassword", "sshpass"]
+
+  [[rules.allowlists]]
+  regexTarget = "secret"
+  regexes = ['''(?i)^(\{|<|%|\*+$|x{3,}|your|change|example|placeholder|dummy|password$)''']
+
+# mysql -u root -pS3cret (MySQL / MariaDB clients take the password glued to -p)
+[[rules]]
+id = "mysql-cli-password"
+description = "MySQL / MariaDB password on the command line (-pPASSWORD)"
+regex = '''(?i)\b(?:mysql|mysqldump|mysqladmin|mysqlimport|mysqlshow|mysqlcheck|mysqlpump|mariadb|mariadb-dump)\b[^\n|;&]{0,200}?\s-p([^\s'";$&|-][^\s'";&|]{3,})'''
+secretGroup = 1
+keywords = ["mysql", "mariadb"]
+
+  [[rules.allowlists]]
+  regexTarget = "secret"
+  regexes = ['''(?i)^(\{|<|%|\*+$|x{3,}|your|change|example|placeholder|dummy|password$)''']
+
+# libpq / dblink DSN string: host=... user=... password=x (space-separated; commas mean keyword args)
+[[rules]]
+id = "libpq-dsn-password"
+description = "Password in a libpq / dblink connection string"
+regex = '''(?i)\b(?:host|hostaddr|dbname|user)\s*=\s*[^'",\n]{0,120}?\bpassword\s*=\s*([^\s'",;)$]{4,})'''
+secretGroup = 1
+keywords = ["password"]
+
+  [[rules.allowlists]]
+  regexTarget = "secret"
+  regexes = ['''(?i)^(\{|<|%|\*+$|x{3,}|your|change|example|placeholder|dummy|pass(word)?$)''']
+
+# Azure storage account key (connection strings) and SAS token signatures
+[[rules]]
+id = "azure-storage-account-key"
+description = "Azure storage account key"
+regex = '''(?i)AccountKey=([A-Za-z0-9+/]{86,88}={0,2})'''
+secretGroup = 1
+keywords = ["accountkey="]
+
+[[rules]]
+id = "azure-sas-token"
+description = "Azure shared access signature (SAS) token"
+regex = '''(?i)[?&]sv=\d{4}-\d{2}-\d{2}[^\s'"]{0,300}?[?&]sig=([A-Za-z0-9%+/=]{30,})'''
+secretGroup = 1
+keywords = ["sig="]
+
+# Added in repo-pr-check-setup (not yet in repo-security-audit's copy): SAS passwords. SAS spells the option
+# pw= (also readpw= / writepw= / alterpw=), often unquoted, on LIBNAME and CONNECT TO statements. PROC PWENCODE
+# output ({SAS002}...) is reversible encoding, not protection, so it is reported; macro references (&pw,
+# %sysget(...)) are not.
+[[rules]]
+id = "sas-password-option"
+description = "Password option in a SAS program"
+regex = '''(?i)\b(?:pw|pwd|password|readpw|writepw|alterpw)\s*=\s*["']?([^\s"';)]{4,})'''
+secretGroup = 1
+keywords = ["pw", "password"]
+path = '''(?i)\.sas$'''
+
+  [[rules.allowlists]]
+  regexTarget = "secret"
+  regexes = ['''(?i)^(&|%|\$|<|x{3,}|your|change|example|placeholder|dummy|\*+$)''']
+
+[[rules]]
+id = "sas-libname-password"
+description = "Password on a SAS LIBNAME or CONNECT TO statement (in any file, e.g. code submitted through saspy)"
+regex = '''(?i)\b(?:libname|connect\s+to)\b[^;\n]{0,300}?\b(?:pw|pwd|password)\s*=\s*["']?([^\s"';)]{4,})'''
+secretGroup = 1
+keywords = ["libname", "connect to"]
+
+  [[rules.allowlists]]
+  regexTarget = "secret"
+  regexes = ['''(?i)^(&|%|\$|<|x{3,}|your|change|example|placeholder|dummy|\*+$)''']

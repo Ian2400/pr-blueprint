@@ -1,0 +1,6 @@
+{
+  "repo": "cloudflare/security-audit-skill",
+  "upstream_path": "skills/security-audit",
+  "commit": "c1c8a8c1471069fb0e188eeaff69b8e8db6564a8",
+  "vendored_on": "2026-11-06"
+}
