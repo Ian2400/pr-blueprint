@@ -25,7 +25,7 @@ import urllib.request
 API = "https://api.github.com"
 HEADERS = {
     "Accept": "application/vnd.github+json",
-    "User-Agent": "repo-pr-check-setup-vendor-check",
+    "User-Agent": "pr-blueprint-vendor-check",
 }
 
 

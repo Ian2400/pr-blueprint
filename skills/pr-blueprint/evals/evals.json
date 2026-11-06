@@ -1,5 +1,5 @@
 {
-  "skill_name": "repo-pr-check-setup",
+  "skill_name": "pr-blueprint",
   "notes": "Run against a scratch clone. Stop before anything visible (push, PR, label creation, artifact publish) unless the case says otherwise; grade the transcript and the files written.",
   "evals": [
     {

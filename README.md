@@ -1,10 +1,14 @@
-# repo-pr-check-setup
+<p align="center">
+  <img src="docs/icon.webp" width="200" alt="PR Blueprint logo">
+</p>
+
+<h1 align="center">PR Blueprint</h1>
 
 A [Claude Code](https://claude.ai/code) skill that builds a bespoke pre-PR review
 skill for *your* repository — one that reviews code the way your team actually
 reviews it, not generic best practice.
 
-Run `/repo-pr-check-setup` once per repository. It interviews you about your
+Run `/pr-blueprint` once per repository. It interviews you about your
 standards, calibrates its triage by having you rate real findings from your
 recent PRs, then commits a skill to `.claude/skills/<name>/` so every developer
 who clones the repo gets `/<name>` with no install of their own.
@@ -14,25 +18,25 @@ who clones the repo gets `/<name>` with no install of their own.
 Copy/paste into your Claude Code CLI prompt:
 
 ```
-Install the repo-pr-check-setup plugin from https://github.com/Ian2400/repo-pr-check-setup
+Install the pr-blueprint plugin from https://github.com/Ian2400/pr-blueprint
 ```
 
 Or, directly:
 
 ```
-claude plugin marketplace add Ian2400/repo-pr-check-setup
-claude plugin install repo-pr-check-setup@repo-pr-check-setup
+claude plugin marketplace add Ian2400/pr-blueprint
+claude plugin install pr-blueprint@pr-blueprint
 ```
 
 Then, in any repository you want a pre-PR check for:
 
 ```
-/repo-pr-check-setup
+/pr-blueprint
 ```
 
 ## How the generator and interview work
 
-`/repo-pr-check-setup` is itself a skill, run once per repository by whoever
+`/pr-blueprint` is itself a skill, run once per repository by whoever
 leads its review standards. It does six things, in order, and can pause
 between them across sessions (it keeps its own state, so you can pick up where
 you left off):
@@ -81,7 +85,7 @@ you left off):
    for your rules owners to review. You can also try it once, uncommitted, on
    a real branch before anything is generated for real.
 
-Re-running `/repo-pr-check-setup` on a repo that already has a generated check
+Re-running `/pr-blueprint` on a repo that already has a generated check
 lets you recalibrate, change rules owners, or upgrade the engine — your
 `rules.md`, `canonical.md`, `surfaces.md`, `examples.md`, and `config.json`
 are never overwritten by an upgrade; only the engine files are.
@@ -129,7 +133,7 @@ On a developer's branch, before they open a PR:
 </tr>
 </table>
 
-See [`skills/repo-pr-check-setup/SKILL.md`](skills/repo-pr-check-setup/SKILL.md)
+See [`skills/pr-blueprint/SKILL.md`](skills/pr-blueprint/SKILL.md)
 for the full mechanics, and its `CHANGELOG.md` for what each version adds.
 
 ## How your bespoke skill learns
@@ -178,7 +182,7 @@ Both this plugin and a skill it already generated can check whether the
 vendored `cloudflare/security-audit-skill` copy is behind upstream:
 
 ```
-/repo-pr-check-setup check-vendor-updates          # this plugin's own copy
+/pr-blueprint check-vendor-updates          # this plugin's own copy
 /<your-generated-skill-name> check-vendor-updates  # a generated skill's copy
 ```
 

@@ -1,5 +1,5 @@
 {
-  "generator": "repo-pr-check-setup",
+  "generator": "pr-blueprint",
   "engine_version": "{{ENGINE_VERSION}}",
   "label": "{{LABEL}}",
   "host": "{{HOST}}",

@@ -6,7 +6,7 @@ The files in this directory (everything except this one, `VENDOR.json`, and
 `VENDOR.json` is the machine-readable record of which commit — read it, don't
 hand-edit it outside the update process below. License: MIT, in `UPSTREAM-LICENSE`.
 
-This copy ships in every skill `repo-pr-check-setup` generates (Phase 1.0a). It's
+This copy ships in every skill `pr-blueprint` generates (Phase 1.0a). It's
 vendored, not installed from upstream at run time, so a generated skill works
 offline and isn't exposed to an upstream change landing mid-run.
 
@@ -25,7 +25,7 @@ or API error — never read that as "up to date").
 
 - **The generator** runs this against its own copy (this directory) to know when
   to re-vendor before the next engine release. See "Upgrade the engine" in
-  `SKILL.md` and the generator's own `/repo-pr-check-setup check-vendor-updates`.
+  `SKILL.md` and the generator's own `/pr-blueprint check-vendor-updates`.
 - **A generated skill** runs this against its own copy, which may be older than
   the generator's current one (it was vendored at that repo's last generate or
   engine upgrade). See `check-vendor-updates` in the generated skill's own modes.

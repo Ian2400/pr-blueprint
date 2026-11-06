@@ -208,7 +208,7 @@ changes.
 Never edit engine files (`SKILL.md`, `references/`, `assets/`, including
 `assets/security/gitleaks_extra.toml`) here. Problems with
 the engine itself go to the skill's maintainers: say so and suggest the developer
-report them where the `repo-pr-check-setup` skill is published.
+report them where the `pr-blueprint` skill is published.
 
 ## Conflict check (shared by "End of a run" and `consolidate`)
 

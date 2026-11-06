@@ -180,7 +180,7 @@ regex = '''(?i)[?&]sv=\d{4}-\d{2}-\d{2}[^\s'"]{0,300}?[?&]sig=([A-Za-z0-9%+/=]{3
 secretGroup = 1
 keywords = ["sig="]
 
-# Added in repo-pr-check-setup (not yet in repo-security-audit's copy): SAS passwords. SAS spells the option
+# Added in pr-blueprint (not yet in repo-security-audit's copy): SAS passwords. SAS spells the option
 # pw= (also readpw= / writepw= / alterpw=), often unquoted, on LIBNAME and CONNECT TO statements. PROC PWENCODE
 # output ({SAS002}...) is reversible encoding, not protection, so it is reported; macro references (&pw,
 # %sysget(...)) are not.

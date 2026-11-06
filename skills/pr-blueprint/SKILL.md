@@ -1,5 +1,5 @@
 ---
-name: repo-pr-check-setup
+name: pr-blueprint
 description: >
   Walks a team lead through creating a bespoke pre-PR review skill for one GitHub
   repository: confirms the repository and the skill's name (e.g.
@@ -14,14 +14,14 @@ description: >
   when someone says "set up a PR check for our repo", "create a PR review skill for
   my team", "make our own pr-check", "recalibrate our PR check", "add an owner to
   our PR check rules", "upgrade our pr-check skill", or invokes
-  /repo-pr-check-setup. "/repo-pr-check-setup check-vendor-updates" checks whether
+  /pr-blueprint. "/pr-blueprint check-vendor-updates" checks whether
   this generator's own vendored cloudflare/security-audit-skill copy is behind
   upstream (see "Checking for vendor updates" below) without running the rest of
   setup. Do NOT use to run a PR check on a branch (that's the
   generated <name>-pr-check skill), or for one-off code review.
 ---
 
-# Repo PR Check Setup
+# PR Blueprint
 
 You help a team lead build a pre-submission PR check that reviews code the way
 *their* team reviews it. The output is a skill committed to their repository,
@@ -100,7 +100,7 @@ Exit 0 = up to date, 1 = upstream has moved (prints how far and what changed),
 ## Setup state
 
 Setup spans more than one session (the lead rates findings in between). Keep state in
-`$(git rev-parse --git-common-dir)/repo-pr-check-setup/<label>.json` in the target
+`$(git rev-parse --git-common-dir)/pr-blueprint/<label>.json` in the target
 repo's clone: the answers from each step, the PRs chosen, the review files' location,
 the rating page URL, and which step is next. On start, if a state file exists, say
 which step you're resuming and continue.
@@ -125,7 +125,7 @@ Then verify:
    for the path to a clone (or offer to `gh repo clone` it to a location they
    choose), and work there from now on.
 4. **Existing check.** Look for `.claude/skills/*/config.json` with
-   `"generator": "repo-pr-check-setup"` on the default branch. If one exists, ask
+   `"generator": "pr-blueprint"` on the default branch. If one exists, ask
    what they want:
    - **Recalibrate:** Step 5 only, then update `examples.md` (and rules the ratings
      change) through a rules PR.
@@ -247,7 +247,7 @@ any rule changes the trial taught).
    | `{{SURFACES}}` | Step 4's change surfaces, written into `surfaces.md` |
    | `{{CANONICAL}}`, `{{EXPLORATORY}}` | Step 4's canonical implementations and exploratory directories, written into `canonical.md` |
    | `{{PR_TYPES}}` | Step 4's PR types, or "None." |
-   | `{{EXAMPLES}}` | Step 5's table, or "Not calibrated yet. Re-run `repo-pr-check-setup` and choose Recalibrate." |
+   | `{{EXAMPLES}}` | Step 5's table, or "Not calibrated yet. Re-run `pr-blueprint` and choose Recalibrate." |
    | `{{INITIAL_RULES_NOTE}}` | e.g. "initial rules from the setup interview; calibrated on 60 ratings of 6 PRs" |
 
    Upgrading from a version that had `revert.md`: rename it to `surfaces.md` and

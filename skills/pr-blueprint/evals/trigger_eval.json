@@ -5,7 +5,7 @@
   {"query": "recalibrate our PR check, it keeps flagging things we don't care about", "should_trigger": true},
   {"query": "add Sam as an owner of our PR check rules", "should_trigger": true},
   {"query": "upgrade our pr-check skill to the latest engine", "should_trigger": true},
-  {"query": "/repo-pr-check-setup", "should_trigger": true},
+  {"query": "/pr-blueprint", "should_trigger": true},
   {"query": "run the PR check on my branch", "should_trigger": false},
   {"query": "review PR #1347", "should_trigger": false},
   {"query": "add a CODEOWNERS file so Pat reviews the api folder", "should_trigger": false},

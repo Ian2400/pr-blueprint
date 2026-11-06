@@ -1,7 +1,7 @@
-# Changelog: repo-pr-check-setup
+# Changelog: pr-blueprint
 
 Claude skills have no built-in version field, so this file and git tags are the
-source of truth. Tag releases as `skill/repo-pr-check-setup-vX.Y.Z`. The version
+source of truth. Tag releases as `skill/pr-blueprint-vX.Y.Z`. The version
 here is also the **engine version** stamped into every generated skill's
 `config.json`.
 
