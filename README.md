@@ -30,6 +30,62 @@ Then, in any repository you want a pre-PR check for:
 /repo-pr-check-setup
 ```
 
+## How the generator and interview work
+
+`/repo-pr-check-setup` is itself a skill, run once per repository by whoever
+leads its review standards. It does six things, in order, and can pause
+between them across sessions (it keeps its own state, so you can pick up where
+you left off):
+
+1. **Repository.** Confirms which repository this check is for (`host/owner/name`)
+   and verifies `gh` access to it.
+2. **Skill name.** Proposes a label derived from the repo name (for example
+   `widgets-pr-check`) for you to confirm or change.
+3. **Rules owners.** Asks who approves changes to the review rules, and adds
+   them to `CODEOWNERS` for `.claude/skills/<name>/`.
+4. **The interview.** Reads your CI config, lint setup, and recent PR history
+   first, so its questions are specific to your repo rather than generic. Then
+   it asks, topic by topic, skipping anything that doesn't apply:
+   - **Principles** — where generic code review gets your team wrong, in your
+     own words, each with a reason the skill can reuse to judge cases the rule
+     doesn't name.
+   - **Risk priorities** — which kinds of change deserve a second look, since
+     this decides what waits for your sign-off instead of being fixed outright.
+   - **Standards** — what's documented where, and what's a clear bug versus a
+     judgment call.
+   - **Environments**, and **deploying & reverting changes** — what a change can
+     affect beyond its own code, and how to undo it.
+   - **One way to do each thing** — which implementation is canonical for
+     common needs, so the codebase doesn't grow parallel versions of the same
+     logic.
+   - **What's noise** — what reviewers flag that you don't want repeated.
+   - **Shared code**, **PR types**, and **issue policy** — how strict to be
+     about linking work, and which PRs need extra scrutiny or sign-off.
+   - **Secrets & PII scan** and **code vulnerability scan** — on/off, and the
+     ID formats, email domains, and scan profile/budget for your repo.
+   - **Code checks** — which linters CI already runs, so the check reuses them
+     instead of inventing a second config.
+   - **PR description** — which sections your reviewers actually need.
+   - **Agent cost and effort** — whether every fix should run at the same
+     (expensive) tier, or scale down for low-risk fixes.
+
+   Each answer is drafted into `rules.md`, `canonical.md`, or `surfaces.md` as
+   a rule with an ID, your reasoning, and a source date — you see the draft and
+   can revise it before moving on.
+5. **Calibration.** Runs the generated check against a handful of your team's
+   own recent PRs and has you rate its real findings. This is usually where
+   setup pauses — you can rate on your own time, or generate now and come back
+   to calibrate later. Disagreements turn into calibrated examples and rule
+   amendments, so day one isn't generic guessing.
+6. **Generate.** Writes the skill into `.claude/skills/<name>/` and opens a PR
+   for your rules owners to review. You can also try it once, uncommitted, on
+   a real branch before anything is generated for real.
+
+Re-running `/repo-pr-check-setup` on a repo that already has a generated check
+lets you recalibrate, change rules owners, or upgrade the engine — your
+`rules.md`, `canonical.md`, `surfaces.md`, `examples.md`, and `config.json`
+are never overwritten by an upgrade; only the engine files are.
+
 ## What the generated check does
 
 On a developer's branch, before they open a PR:
