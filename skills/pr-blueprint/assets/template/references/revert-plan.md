@@ -66,7 +66,7 @@ block is fenced YAML under a fixed marker line, so tools can find it:
 ### Revert plan
 
 **R1 (risk 5): model_train excludes all-NULL features.** Revert the merge commit,
-then restore `athletics.model_train` from the base commit... Not reversible: none.
+then restore `retention.model_train` from the base commit... Not reversible: none.
 
 <!-- revert-plan v1 -->
 ```yaml
@@ -79,17 +79,17 @@ changes:
   - id: R1
     risk: 5
     what: "model_train excludes all-NULL features"
-    files: [src/projects/athletics/athletics_model_train.sql]
+    files: [src/projects/retention/retention_model_train.sql]
     commits: [a1b2c3d]
     surfaces:
       database_objects:
-        - "Restore athletics.model_train(text, integer) from 1f8bbb08b:src/projects/athletics/athletics_model_train.sql"
+        - "Restore retention.model_train(text, integer) from 1f8bbb08b:src/projects/retention/retention_model_train.sql"
       models:
-        - "Set model_id=4 in run_athletics_score_or_update.sh on both hosts"
+        - "Set model_id=4 in run_retention_score_or_update.sh on both hosts"
     irreversible: []
     acknowledged_by: null
     verify:
-      - "select count(*) from athletics.zeus_3gpa_model where model_id >= 5  -- expect 0"
+      - "select count(*) from retention.score_model where model_id >= 5  -- expect 0"
 ```
 ````
 

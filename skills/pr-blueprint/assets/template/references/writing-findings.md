@@ -33,7 +33,7 @@ The issue for the work a branch does: what's being built or changed, and why. Ke
 it short; it's a record, not a spec.
 
 Title: what the work delivers, at most 72 characters, in the repo's usual style
-(for example "Athletics: retention model for the 2026 cohort").
+(for example "Retention: churn model for the 2026 cohort").
 
 ```markdown
 ## Why
@@ -101,7 +101,7 @@ Fix with AI, starting now:
   4. ...
 
 High-risk changes (Revert plan entries):
-  C2 [5] model_train's feature exclusion logic            not reversible: overwrites athletics.features
+  C2 [5] model_train's feature exclusion logic            not reversible: overwrites retention.features
   C4 [4] nightly scoring script and its model_id
 
 Unclear standard:
