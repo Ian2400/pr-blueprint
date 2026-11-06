@@ -14,13 +14,13 @@ who clones the repo gets `/<name>` with no install of their own.
 Copy/paste into your Claude Code CLI prompt:
 
 ```
-Install the repo-pr-check-setup plugin from https://github.com/<your-github-username>/repo-pr-check-setup
+Install the repo-pr-check-setup plugin from https://github.com/Ian2400/repo-pr-check-setup
 ```
 
 Or, directly:
 
 ```
-claude plugin marketplace add <your-github-username>/repo-pr-check-setup
+claude plugin marketplace add Ian2400/repo-pr-check-setup
 claude plugin install repo-pr-check-setup@repo-pr-check-setup
 ```
 
@@ -84,7 +84,7 @@ See `VENDORED.md` beside the vendored files for how an update gets applied.
 ```
 claude plugin uninstall repo-pr-check-setup
 claude plugin marketplace remove repo-pr-check-setup
-claude plugin marketplace add <your-fork-owner>/repo-pr-check-setup
+claude plugin marketplace add Ian2400/repo-pr-check-setup
 claude plugin install repo-pr-check-setup@repo-pr-check-setup
 ```
 
